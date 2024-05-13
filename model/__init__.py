@@ -1,1 +1,1 @@
-from .modeling_dtca import DTCAModel
+from .modeling_vlpca import VLPCAModel
