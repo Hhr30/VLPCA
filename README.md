@@ -1,4 +1,4 @@
-# DTCA
+# VLPCA
 
 ## 1. dataset and pretrained models
 Download twitter-2015 dataset and twitter-2017 dataset and put them into datasets/ .
@@ -28,8 +28,8 @@ Other parameters introduced in code. There are other preprocess for other use, n
     sh run.sh
 other training parameters introduced in code
 
-## 5. model DTCA
-Implementation in code model/modeling_dtca.py
+## 5. model 
+Implementation in code model/modeling_vlpca.py
 
 ## 6. ablation study
 Set alpha = 0 or beta = 0
