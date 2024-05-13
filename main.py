@@ -2,7 +2,7 @@ import os.path
 
 from transformers import AutoConfig,TrainingArguments,Trainer,EvalPrediction
 from transformers import BertForTokenClassification,RobertaForTokenClassification,AlbertForTokenClassification, ViTForImageClassification,SwinForImageClassification,DeiTModel, ConvNextForImageClassification
-from model import DTCAModel
+from model import VLPCAModel
 import torch
 from utils.MyDataSet import  MyDataSet2
 from utils.metrics import cal_f1
@@ -157,8 +157,8 @@ else:
     os.error("出错了")
     exit()
 
-# init DTCAModel
-vb_model = DTCAModel(config1,config2,text_num_labels=5,text_model_name=text_model_name,image_model_name=image_model_name,alpha=alpha,beta=beta)
+# init VLPCAModel
+vb_model = VLPCAModel(config1,config2,text_num_labels=5,text_model_name=text_model_name,image_model_name=image_model_name,alpha=alpha,beta=beta)
 vb_model_dict = vb_model.state_dict()
 
 # load pretrained model weights
