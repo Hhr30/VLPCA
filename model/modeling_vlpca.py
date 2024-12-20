@@ -177,6 +177,8 @@ class VLPCAModel(nn.Module):
         # word_region_align_loss = ot_dist.masked_select(targets == 0)
         # getTextLoss: CrossEntropy
         text_loss = self.loss_fct(text_token_logits.view(-1, self.text_num_labels), labels.view(-1))
+
+        # Compute total loss as a weighted sum of text loss, alignment loss, and cross-modal loss
         loss =  cross_crf_loss + self.beta * word_region_align_loss + self.alpha * text_loss
         # loss = text_loss
 
