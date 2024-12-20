@@ -65,7 +65,6 @@ class VLPCAModel(nn.Module):
     def forward(self, input_ids=None, attention_mask=None, token_type_ids=None, position_ids=None,
                 pixel_values=None, inputs_embeds=None, labels=None, output_attentions=None, output_hidden_states=None,
                 image_labels=None, head_mask=None, cross_labels=None, return_dict=None):
-
         """
         The forward pass of the model, processing both text and image inputs and computing the losses.
 
@@ -88,6 +87,8 @@ class VLPCAModel(nn.Module):
             dict: A dictionary containing the loss, text logits, and cross-modal logits.
         """
         return_dict = return_dict if return_dict is not None else self.config1.use_return_dict
+                    
+        # Process text inputs through the chosen text model
         if self.text_model_name == 'bert':
             text_outputs = self.bert(input_ids,
                 attention_mask=attention_mask,
@@ -130,6 +131,8 @@ class VLPCAModel(nn.Module):
                                         return_dict=return_dict)
         else:
             text_outputs=None
+
+        # Process image inputs through the chosen image model
         if self.image_model_name == 'vit':
             image_outputs = self.vit(pixel_values,head_mask=head_mask)
         elif self.image_model_name == 'swin':
