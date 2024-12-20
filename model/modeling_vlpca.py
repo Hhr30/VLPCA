@@ -23,6 +23,8 @@ class VLPCAModel(nn.Module):
             image_model_name (str, optional): The name of the image model to use. Defaults to 'vit'.
         """
         super().__init__()
+        
+        # Initialize text models based on the provided text_model_name
         if text_model_name == 'roberta':
             self.roberta = RobertaModel(config1,add_pooling_layer=False)
         elif text_model_name == 'bert':
@@ -31,6 +33,8 @@ class VLPCAModel(nn.Module):
             self.albert = AlbertModel(config1, add_pooling_layer=False)
         elif text_model_name == 'electra':
             self.electra = ElectraModel(config1)
+
+        # Initialize image models based on the provided image_model_name
         if image_model_name == 'vit':
             self.vit = ViTModel(config2)
         elif image_model_name == 'swin':
@@ -39,6 +43,8 @@ class VLPCAModel(nn.Module):
             self.deit = DeiTModel(config2)
         elif image_model_name == 'convnext':
             self.convnext = ConvNextModel(config2)
+
+        # Store hyperparameters and configuration
         self.alpha = alpha
         self.beta = beta
         self.text_model_name=text_model_name
@@ -46,27 +52,41 @@ class VLPCAModel(nn.Module):
         self.config1 = config1
         self.config2 = config2
         self.text_num_labels = text_num_labels
-        self.image_text_cross = MultiHeadAttention(8,config1.hidden_size,config1.hidden_size,config1.hidden_size)
-        self.dropout = nn.Dropout(config1.hidden_dropout_prob)
-        self.loss_fct = CrossEntropyLoss()
+        self.image_text_cross = MultiHeadAttention(8,config1.hidden_size,config1.hidden_size,config1.hidden_size) # Initialize cross-modal attention mechanism
+        self.dropout = nn.Dropout(config1.hidden_dropout_prob) # Initialize dropout layer for regularization
+        self.loss_fct = CrossEntropyLoss() # Initialize loss function for text classification
+
+        # Initialize linear layers for text and cross-modal classification
         self.classifier1 = nn.Linear(config1.hidden_size, self.text_num_labels)
         self.classifier0= nn.Linear(config1.hidden_size,self.text_num_labels)
+        # Initialize Conditional Random Field (CRF) layer for sequence labeling tasks
         self.CRF = CRF(self.text_num_labels,batch_first=True)
 
-    def forward(self,
-                input_ids=None,
-                attention_mask=None,
-                token_type_ids=None,
-                position_ids=None,
-                pixel_values=None,
-                inputs_embeds=None,
-                labels=None,
-                output_attentions=None,
-                output_hidden_states=None,
-                image_labels=None,
-                head_mask=None,
-                cross_labels=None,
-                return_dict=None):
+    def forward(self, input_ids=None, attention_mask=None, token_type_ids=None, position_ids=None,
+                pixel_values=None, inputs_embeds=None, labels=None, output_attentions=None, output_hidden_states=None,
+                image_labels=None, head_mask=None, cross_labels=None, return_dict=None):
+
+        """
+        The forward pass of the model, processing both text and image inputs and computing the losses.
+
+        Args:
+            input_ids (torch.Tensor): The input IDs for the text input.
+            attention_mask (torch.Tensor): The attention mask for the text input.
+            token_type_ids (torch.Tensor): The token type IDs for the text input.
+            position_ids (torch.Tensor): The position IDs for the text input.
+            pixel_values (torch.Tensor): The pixel values for the image input.
+            inputs_embeds (torch.Tensor): The input embeddings for the text input.
+            labels (torch.Tensor): The labels for the text classification task.
+            output_attentions (bool): Whether to output attention weights.
+            output_hidden_states (bool): Whether to output hidden states.
+            image_labels (torch.Tensor): The labels for the image classification task.
+            head_mask (torch.Tensor): The head mask for the attention mechanism.
+            cross_labels (torch.Tensor): The labels for the cross-modal classification task.
+            return_dict (bool): Whether to return a dictionary or a tuple.
+
+        Returns:
+            dict: A dictionary containing the loss, text logits, and cross-modal logits.
+        """
         return_dict = return_dict if return_dict is not None else self.config1.use_return_dict
         if self.text_model_name == 'bert':
             text_outputs = self.bert(input_ids,
