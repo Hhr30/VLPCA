@@ -144,16 +144,20 @@ class VLPCAModel(nn.Module):
         else:
             image_outputs=None
 
+        # Extract the last hidden states from text and image models
         text_last_hidden_states = text_outputs["last_hidden_state"]
         image_last_hidden_states = image_outputs["last_hidden_state"]
 
-        # cross_crf_loss
+        # Compute cross-modal attention and cross-modal classification logits
         image_text_cross_attention, _ = self.image_text_cross(text_last_hidden_states, image_last_hidden_states,
                                                               image_last_hidden_states)
         cross_logits = self.classifier0(image_text_cross_attention)
+
+        # Compute mask for cross-modal loss calculation
         mask = (labels != -100)
         mask[:,0] = 1
         # print(cross_logits.shape, cross_labels.shape)
+        # Compute cross-modal CRF loss
         cross_crf_loss =  -self.CRF(cross_logits,cross_labels,mask=mask) / 10
 
         # word patch align
@@ -161,6 +165,8 @@ class VLPCAModel(nn.Module):
         _,text_len,_ = text_last_hidden_states.shape
         text_pad = (attention_mask == 1).clone().detach()
         image_pad = torch.zeros(batch_size, image_len,dtype=torch.bool, device=attention_mask.device)
+
+        # Compute optimal transport distance for word-patch alignment
         ot_dist =  optimal_transport_dist(text_last_hidden_states,image_last_hidden_states,text_pad,image_pad)
         word_region_align_loss = ot_dist.mean()
 
