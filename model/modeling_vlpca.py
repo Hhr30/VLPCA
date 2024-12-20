@@ -12,6 +12,16 @@ from transformers import RobertaModel,BertModel,AlbertModel,ElectraModel,ViTMode
 
 class VLPCAModel(nn.Module):
     def __init__(self,config1,config2,text_num_labels,alpha,beta,text_model_name="roberta",image_model_name='vit'):
+        """
+        Args:
+            config1 (Configuration): The configuration for the text model.
+            config2 (Configuration): The configuration for the image model.
+            text_num_labels (int): The number of labels for the text classification task.
+            alpha (float): A hyperparameter for balancing the text loss.
+            beta (float): A hyperparameter for balancing the alignment loss.
+            text_model_name (str, optional): The name of the text model to use. Defaults to "roberta".
+            image_model_name (str, optional): The name of the image model to use. Defaults to 'vit'.
+        """
         super().__init__()
         if text_model_name == 'roberta':
             self.roberta = RobertaModel(config1,add_pooling_layer=False)
